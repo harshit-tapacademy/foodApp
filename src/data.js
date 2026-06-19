@@ -32,7 +32,6 @@ const P = {
   fish: img('1626777552726-4a6b54c97e46'),
   coastal: img('1604908176997-125f25cc6f3d'),
   pasta: img('1596797038530-2c107229654b'),
-  noodles: img('1546833999-b9f581a1996d'),
   breakfast: img('1604382354936-07c5d9983bd3'),
 }
 

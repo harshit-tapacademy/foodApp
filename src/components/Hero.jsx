@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Chip, Wave } from './primitives.jsx'
@@ -7,17 +7,22 @@ import { PinIcon, Cloud, Burger, Fish } from './icons.jsx'
 
 gsap.registerPlugin(ScrollTrigger)
 
-// infinite gentle float for the badge cards
-const floatAnim = (dur, delay = 0) => ({
-  animate: { y: [0, -14, 0], rotate: [0, 1.5, 0] },
-  transition: { duration: dur, repeat: Infinity, ease: 'easeInOut', delay },
-})
+// infinite gentle float for the badge cards (still when reduced motion is requested)
+const floatAnim = (dur, delay = 0, reduce = false) =>
+  reduce
+    ? { animate: { y: 0, rotate: 0 } }
+    : {
+        animate: { y: [0, -14, 0], rotate: [0, 1.5, 0] },
+        transition: { duration: dur, repeat: Infinity, ease: 'easeInOut', delay },
+      }
 
 export default function Hero() {
   const root = useRef(null)
+  const reduceMotion = useReducedMotion()
 
   // GSAP parallax drift on the line-art as you scroll
   useEffect(() => {
+    if (reduceMotion) return
     const ctx = gsap.context(() => {
       gsap.utils.toArray('.float').forEach((el, i) => {
         gsap.to(el, {
@@ -29,7 +34,7 @@ export default function Hero() {
       })
     }, root)
     return () => ctx.revert()
-  }, [])
+  }, [reduceMotion])
 
   return (
     <section className="hero" id="top" ref={root}>
@@ -93,15 +98,15 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ delay: 0.5, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         >
-          <motion.div className="hero__badge hero__badge--a" {...floatAnim(5)}>
+          <motion.div className="hero__badge hero__badge--a" {...floatAnim(5, 0, reduceMotion)}>
             <span className="emoji">🍛</span>
             <span>Meghana Foods<small>30 min · ★ 4.5</small></span>
           </motion.div>
-          <motion.div className="hero__badge hero__badge--b" {...floatAnim(6, 0.6)}>
+          <motion.div className="hero__badge hero__badge--b" {...floatAnim(6, 0.6, reduceMotion)}>
             <span className="emoji">🛵</span>
             <span>On the way!<small>Arriving in 4 min</small></span>
           </motion.div>
-          <motion.div className="hero__badge hero__badge--c" {...floatAnim(5.5, 1)}>
+          <motion.div className="hero__badge hero__badge--c" {...floatAnim(5.5, 1, reduceMotion)}>
             <span className="emoji">🪔</span>
             <span>MTR Rava Idli<small>₹110 · Bestseller</small></span>
           </motion.div>
