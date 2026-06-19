@@ -1,0 +1,23 @@
+{
+  "name": "forkfleet",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "ForkFleet — an animated food delivery website built with React, Framer Motion, GSAP and Lenis.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "framer-motion": "^11.3.24",
+    "gsap": "^3.12.5",
+    "lenis": "^1.1.13",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.2"
+  }
+}
