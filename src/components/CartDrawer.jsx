@@ -1,22 +1,66 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useUser } from '@clerk/react'
 import { useCart } from '../cart.jsx'
 import { formatINR, DELIVERY_FEE, PACKING_FEE, GST_RATE } from '../data.js'
+import { loadRazorpay, createOrder } from '../razorpay.js'
 import VegDot from './VegDot.jsx'
+
+const RZP_KEY = import.meta.env.VITE_RAZORPAY_KEY_ID
 
 export default function CartDrawer() {
   const { cartOpen, closeCart, items, inc, dec, removeItem, subtotal, clear, ping } = useCart()
+  const { user } = useUser()
   const [placed, setPlaced] = useState(false)
+  const [paymentId, setPaymentId] = useState(null)
+  const [paying, setPaying] = useState(false)
 
-  useEffect(() => { if (cartOpen) setPlaced(false) }, [cartOpen])
+  useEffect(() => { if (cartOpen) { setPlaced(false); setPaymentId(null) } }, [cartOpen])
 
   const gst = Math.round(subtotal * GST_RATE)
   const total = subtotal > 0 ? subtotal + DELIVERY_FEE + PACKING_FEE + gst : 0
 
-  const checkout = () => {
+  const onSuccess = (rzpPaymentId) => {
+    setPaymentId(rzpPaymentId || null)
     setPlaced(true)
     clear()
-    ping('Order placed! 🛵')
+    ping('Payment successful! 🛵')
+  }
+
+  const checkout = async () => {
+    if (!RZP_KEY || RZP_KEY.includes('REPLACE')) {
+      ping('Add your Razorpay Key ID to .env.local')
+      return
+    }
+    setPaying(true)
+    const ready = await loadRazorpay()
+    if (!ready) { setPaying(false); ping('Could not reach Razorpay. Check your connection.'); return }
+
+    const amountPaise = total * 100
+    const orderId = await createOrder(amountPaise) // null on static/test (no backend)
+
+    const rzp = new window.Razorpay({
+      key: RZP_KEY,
+      amount: amountPaise,
+      currency: 'INR',
+      name: 'ForkFleet',
+      description: `${items.length} item(s) from ${items[0]?.restName || 'Bengaluru'}`,
+      ...(orderId ? { order_id: orderId } : {}),
+      prefill: {
+        name: user?.fullName || '',
+        email: user?.primaryEmailAddress?.emailAddress || '',
+        contact: user?.primaryPhoneNumber?.phoneNumber || '',
+      },
+      notes: { items: items.map((i) => `${i.qty}× ${i.name}`).join(', '), area: items[0]?.restName },
+      theme: { color: '#3366e0' },
+      handler: (resp) => { setPaying(false); onSuccess(resp.razorpay_payment_id) },
+      modal: { ondismiss: () => { setPaying(false); ping('Payment cancelled') } },
+    })
+    rzp.on('payment.failed', (resp) => {
+      setPaying(false)
+      ping('Payment failed: ' + (resp.error?.description || 'try again'))
+    })
+    rzp.open()
   }
 
   return (
@@ -43,7 +87,8 @@ export default function CartDrawer() {
               <div className="drawer__empty">
                 <div className="drawer__bigemoji">🛵</div>
                 <h4>Order placed!</h4>
-                <p>Your food is being prepared and will reach you shortly. Track it live in the app.</p>
+                <p>Payment received. Your food is being prepared and will reach you shortly. Track it live in the app.</p>
+                {paymentId && <span className="payment-id">Payment ID: {paymentId}</span>}
                 <button className="btn btn--lime btn--lg" onClick={closeCart}>Done</button>
               </div>
             ) : items.length === 0 ? (
@@ -91,9 +136,10 @@ export default function CartDrawer() {
                 </div>
 
                 <div className="drawer__foot">
-                  <button className="btn btn--lime btn--lg drawer__checkout" onClick={checkout}>
-                    Place order · {formatINR(total)}
+                  <button className="btn btn--lime btn--lg drawer__checkout" onClick={checkout} disabled={paying}>
+                    {paying ? 'Opening payment…' : `Pay ${formatINR(total)}`}
                   </button>
+                  <p className="drawer__secure">🔒 Secured by Razorpay · UPI, cards, netbanking</p>
                 </div>
               </>
             )}
