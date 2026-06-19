@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Show, SignInButton, SignUpButton, UserButton } from '@clerk/react'
 import { ForkLogo, CartIcon } from './icons.jsx'
 import { useCart } from '../cart.jsx'
 
@@ -41,7 +42,17 @@ export default function Nav() {
           </ul>
 
           <div className="nav__cta">
-            <a className="btn btn--ghost nav__signin" href="#">Sign in</a>
+            <Show when="signed-out">
+              <SignInButton mode="modal">
+                <button className="btn btn--ghost nav__signin">Sign in</button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <button className="btn btn--lime nav__signup">Sign up</button>
+              </SignUpButton>
+            </Show>
+            <Show when="signed-in">
+              <span className="nav__user"><UserButton afterSignOutUrl="/" /></span>
+            </Show>
             <button className="btn btn--lime" onClick={openCart} aria-label="Open cart">
               <CartIcon /> Cart{count > 0 ? ` · ${count}` : ''}
             </button>
@@ -77,7 +88,17 @@ export default function Nav() {
               {links.map(([label, href]) => (
                 <a key={href} href={href} onClick={() => setOpen(false)}>{label}</a>
               ))}
-              <a href="#" onClick={() => setOpen(false)}>Sign in</a>
+              <Show when="signed-out">
+                <SignInButton mode="modal">
+                  <a href="#" onClick={() => setOpen(false)}>Sign in</a>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <a href="#" onClick={() => setOpen(false)}>Sign up</a>
+                </SignUpButton>
+              </Show>
+              <Show when="signed-in">
+                <div className="nav-sheet__user"><UserButton afterSignOutUrl="/" /> <span>My account</span></div>
+              </Show>
             </motion.div>
           </motion.div>
         )}

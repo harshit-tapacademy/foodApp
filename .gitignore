@@ -4,3 +4,6 @@ dist
 *.log
 .vite
 e2e/*.png
+
+.env
+.env.local

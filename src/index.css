@@ -144,6 +144,8 @@ html.lenis, html.lenis body { height: auto; }
 .nav__links a::after { content: ""; position: absolute; left: 0; bottom: 0; width: 0; height: 2px; background: var(--color-lime-pulse); transition: width .2s ease; }
 .nav__links a:hover::after { width: 100%; }
 .nav__cta { display: flex; align-items: center; gap: 10px; }
+.nav__user { display: inline-flex; align-items: center; }
+.nav-sheet__user { display: flex; align-items: center; gap: 10px; padding: 12px 14px; font-size: 18px; }
 .nav__burger { display: none; flex-direction: column; gap: 4px; width: 42px; height: 38px; border: 1px solid #000; border-radius: var(--radius-full); align-items: center; justify-content: center; background: #fff; box-shadow: var(--shadow-subtle-3); }
 .nav__burger span { width: 18px; height: 2px; background: #000; border-radius: 2px; }
 
@@ -396,7 +398,7 @@ html.lenis, html.lenis body { height: auto; }
   .hero__badge--a { left: 0; } .hero__badge--b { right: 0; }
 }
 @media (max-width: 720px) {
-  .nav__links, .nav__signin { display: none; }
+  .nav__links, .nav__signin, .nav__signup { display: none; }
   .nav__burger { display: flex; }
   .grid--3 { grid-template-columns: 1fr; }
   .grid--4 { grid-template-columns: 1fr 1fr; }
